@@ -1,4 +1,4 @@
-import { Table, Input, Row, Col, DatePicker, Typography } from "antd";
+import { Table, Input, Row, Col, DatePicker, Typography, Select } from "antd";
 import { useEffect, useState } from "react";
 import logApi from "../api/logApi";
 import ExportCSV from "./exportcsv";
@@ -20,11 +20,18 @@ const LogForm = () => {
   const [path, setPath] = useState('');
   const [openModel, setOpenModel] = useState(false);
   const [searchTime, setSearchTime] = useState(null);
+  const [domain, setDomain] = useState('');
+  const [status, setStatus] = useState('')
+  const pageSize = 10; // Số lượng dòng trên mỗi trang
+  const [currentPage, setCurrentPage] = useState(1); // Trang hiện tại
+  const [fromDate, setFromDate] = useState('');
+  const [toDate, setToDate] = useState('');
+
 
   const getLog = async () => {
     const { RangePicker } = DatePicker;
     setLoading(true);
-    const dataLog = await logApi.getLog();
+    const dataLog = await logApi.getLog(idCourse, courseCode, nameCourse, userName, path, domain, status, fromDate, toDate);
     setData(dataLog)
     setDataLog(dataLog);
     setExportData(dataLog);
@@ -32,11 +39,11 @@ const LogForm = () => {
   };
 
 
-  const handleOpen = (item) =>{
+  const handleOpen = (item) => {
     console.log(item);
     setOpenModel(true);
     setExportData(item)
-  } 
+  }
 
   const selectCourseCode = (e) => setCourseCode(e.target.value);
 
@@ -46,80 +53,35 @@ const LogForm = () => {
 
   const selectUserName = (e) => setUserName(e.target.value);
 
-  const selectPath =(e) => setPath(e.target.value)
+  const selectPath = (e) => setPath(e.target.value)
 
-  const onChange = (value, dateString) => {
-    console.log(dateString,'va');
-    setSearchTime(dateString);
-  };
-  const onOk = () => {
-    if(searchTime) {
-      if(searchTime.length==2) {
-        const log = dataLog.filter(item => {
-          return (
-              moment(item.created_at).unix() >= moment(searchTime[0]).unix() &&
-              moment(item.created_at).unix() <= moment(searchTime[1]).unix()
-            );
-          })
-          console.log(log,'log');
-        setData(log);
-      }
-      else{
-        const log = dataLog.filter(item => {
-          return (
-            new Date(moment(item.created_at).unix()*1000).toLocaleDateString("en-US")
-            == new Date(moment(searchTime).unix()*1000).toLocaleDateString("en-US")
-            );
-          })
-        setData(log);
-      }
-    }else{
-      setData(dataLog);
-    }
+  const onChange = (value) => {
+    setFromDate(value[0])
+    setToDate(value[1]);
   };
 
-  const handleSearchId = () => {
-    const a = idCourse?.toLowerCase();;
-    const e = dataLog.filter((item) => {
-      return item?.id?.toLowerCase().includes(a)
-    });
-    setData(e);
+  const handleChange = (value) => {
+    setDomain(value);
+  };
+  const handleChangeStatus = (value) => {
+    setStatus(value);
+  };
+
+
+  const handleSelectInput = async () => {
+    const dataLog = await logApi.getLog(idCourse, courseCode, nameCourse, userName, path, domain, status, fromDate, toDate);
+    setData(dataLog)
   }
 
-  const handlePath = () => {
-    const a = path?.toLowerCase();;
-    const e = dataLog.filter((item) => {
-      return item?.path?.toLowerCase().includes(a)
-    });
-    setData(e);
-  }
-
-  const handleSearchNameCourse = () => {
-    const a = nameCourse?.toLowerCase();
-    const e = dataLog.filter((item) => {
-      return item?.user_name?.toLowerCase().includes(a)
-    });
-    setData(e);
-  }
-  const handleUserName = () => {
-    const a = userName?.toLowerCase();
-    const e = dataLog.filter((item) => {
-        return item?.user_name?.toLowerCase().includes(a)
-    });
-    setData(e);
-  }
-  const handleSearchCourseCode = () => {
-    const a = courseCode?.toLowerCase();
-    const e = dataLog.filter((item) => {
-      return item?.course_id?.toLowerCase().includes(a)
-    });
-    setData(e);
-  }
-  
   useEffect(() => {
     getLog();
   }, [searchTime]);
   const columns = [
+    {
+      title: 'STT',
+      key: 'index',
+      render: (text, record, index) => (currentPage - 1) * pageSize + index + 1,
+    },
     {
       title: "id",
       id: "id",
@@ -167,7 +129,7 @@ const LogForm = () => {
           <>{moment(`${record.created_at}`).format("YYYY-MM-DD kk:mm:ss")}</>
         );
       },
-      width:150
+      width: 150
     },
     {
       title: "domain",
@@ -182,6 +144,10 @@ const LogForm = () => {
           text: 'http://10.0.0.120:7000',
           value: 'http://10.0.0.120:7000',
         },
+        {
+          text: 'http://10.0.0.121:3001',
+          value: 'http://10.0.0.121:3001',
+        },
       ],
       onFilter: (value, record) => record.domain.indexOf(value) === 0,
     },
@@ -195,23 +161,23 @@ const LogForm = () => {
       dataIndex: "data",
       key: "data",
       render: (text) => <Typography.Paragraph ellipsis={{ rows: 3 }}>{text}</Typography.Paragraph>,
-      width:300,
+      width: 300,
     },
     {
-      title:"Status",
+      title: "Status",
       dataIndex: "status",
       key: "status",
-      filters:[
+      filters: [
         {
           text: "Đã Hoàn Thành",
-          value:200
+          value: 200
         },
         {
           text: "Lỗi",
-          value:500
-        },{
+          value: 500
+        }, {
           text: "Request Body",
-          value:0
+          value: 0
         },
       ],
       onFilter: (value, record) => record.status === value,
@@ -226,12 +192,13 @@ const LogForm = () => {
       dataIndex: "action",
       key: "action",
       render: (text, record) => (
-        <div>
-          <Button type="primary" onClick={()=>handleOpen(record)}>
-              Info
+        <div style={{ display: "flex" }}>
+          <Button style={{ marginRight: 15 }} type="primary" onClick={() => handleOpen(record)}>
+            Info
           </Button>
+          <BtnExportJson data={record} />
         </div>
-       ),
+      ),
     },
   ];
 
@@ -239,63 +206,119 @@ const LogForm = () => {
     <>
       <Row>
         <Col span={24}>
-        <div>
-          <h1>Table Log</h1>
-        </div>
+          <div>
+            <h1>Table Log</h1>
+          </div>
           {
             openModel ? <ModelInfo openModel={openModel} data={exportData} setOpenModel={setOpenModel} /> : <div></div>
           }
-        <Row style={{marginTop:10}}>
-          <Col span={8} offset={2}>
-             <Input onChange={selectIdCourse} placeholder="Tìm Kiếm Id Khóa Học" />
-             <Button style={{marginTop:5}} onClick={handleSearchId}>Tìm Kiếm</Button>
-          </Col>
-          <Col span={8} offset={2}>
-            <Input onChange={selectCourseCode} placeholder="Tìm Kiếm Theo Mã Khóa Học" />
-            <Button style={{marginTop:5}}  onClick={handleSearchCourseCode}>Tìm Kiếm</Button>
-          </Col>
+          <Row style={{ marginTop: 10 }}>
+            <Col span={8} offset={2}>
+              <Input onChange={selectIdCourse} placeholder="Tìm Kiếm Id Khóa Học" />
+            </Col>
+            <Col span={8} offset={2}>
+              <Input onChange={selectCourseCode} placeholder="Tìm Kiếm Theo Mã Khóa Học" />
+            </Col>
+          </Row>
+          <Row style={{ marginTop: 10 }}>
+            <Col span={8} offset={2}>
+              <Input onChange={selectNameCourse} placeholder="Tìm Kiếm Theo Tên Khóa Học" />
+            </Col>
+            <Col span={8} offset={2}>
+              <Input onChange={selectUserName} placeholder="Tìm Kiếm Theo UseName" />
+            </Col>
           </Row>
           <Row style={{marginTop:10}}>
-          <Col span={8} offset={2}>
-            <Input onChange={selectNameCourse} placeholder="Tìm Kiếm Theo Tên Khóa Học" />
-            <Button style={{marginTop:5}}  onClick={handleSearchNameCourse}>Tìm Kiếm</Button>
-          </Col>
-         <Col span={8} offset={2}>
-         <Input onChange={selectUserName} placeholder="Tìm Kiếm Theo UseName" />
-          <Button style={{marginTop:5}}  onClick={handleUserName}>Tìm Kiếm</Button>
-         </Col>
-          </Row>
-          <Row style={{marginTop:10, marginBottom:10}}>
           <Col span={8} offset={2} >
-          <Input onChange={selectPath} placeholder="Tìm Kiếm Theo Path" />
-          <Button style={{marginTop:5}} onClick={handlePath}>Tìm Kiếm</Button>
-          </Col>
-          <Col style={{padding:5}} span={8} offset={2}>
-            {/* <ExportCSV data={exportData} filename={"my-data.csv"}  /> */}
-            <BtnExportJson data={data} />
-            {/* <BtnExportJson data={exportData} /> */}
-          </Col>
+              <Input onChange={selectPath} placeholder="Tìm Kiếm Theo Path" />
+            </Col>
+            <Col span={8} offset={2}>
+              <Row>
+                <Col>
+                <h4>Tìm kiếm theo ngày</h4></Col>
+                <Col>
+                <RangePicker
+                  showTime
+                  format="YYYY-MM-DD HH:mm"
+                  onChange={onChange}
+                  defaultValue=''
+                />
+
+                </Col>
+              </Row>
+        
+            </Col>
           </Row>
-          <Col span={8} offset={8} style={{marginBottom: 10}}>
-          <RangePicker
-              format="YYYY-MM-DD HH:mm"
-              onChange={onChange}
-              onOk={onOk}
-              defaultValue=''
-            />
-            <Button style={{marginTop:5}} onClick={onOk}>Tìm Kiếm</Button>
-          </Col>
-        <Table
-          dataSource={data}
-          columns={columns}
-          loading={loading}
-          pagination={{
-            ...data.pagination,
-            showTotal: (total, range) =>
-              `${range[0]}-${range[1]} of ${total} items`,
-          }}
-        />
+          <Row>
+            <Col span={8} offset={2}>
+            <Select
+            defaultValue=""
+            style={{
+              width: 300,
+            }}
+            onChange={handleChange}
+            options={[
+              {
+                value: 'http://10.0.0.120:3001',
+                label: 'http://10.0.0.120:3001',
+              },
+              {
+                value: 'http://10.0.0.120:7000',
+                label: 'http://10.0.0.120:7000',
+              },
+              {
+                value: 'http://10.0.0.121:3001',
+                label: 'http://10.0.0.121:3001',
+              }
+            ]}
+          />
+            </Col>
+            <Col span={8} offset={2}>
+            <Select
+            defaultValue=""
+            style={{
+              width: 300,
+            }}
+            onChange={handleChangeStatus}
+            options={[
+              {
+                value: '200',
+                label: 'Đã Hoàn Thành',
+              },
+              {
+                value: '500',
+                label: 'Bị Lỗi',
+              },
+              {
+                value: '0',
+                label: 'Trước Khi Gửi Request',
+              }
+            ]}
+          />
+            </Col>
  
+    
+          </Row>
+          <Button style={{ marginTop: 5 }} onClick={handleSelectInput}>Tìm Kiếm</Button>
+          <Row>
+
+          </Row>
+      
+          <Table
+            rowKey={(record, index) => index}
+            dataSource={data}
+            columns={columns}
+            loading={loading}
+            pagination={{
+              ...data.pagination,
+              current: currentPage,
+              pageSize: pageSize,
+              onChange: (page) => setCurrentPage(page),
+              showTotal: (total, range) =>
+                `${range[0]}-${range[1]} of ${total} items`,
+            }}
+          />
+
         </Col>
       </Row>
     </>
