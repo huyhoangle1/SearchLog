@@ -1,9 +1,8 @@
-import { Table, Input, Row, Col, DatePicker, Typography, Select, Pagination } from "antd";
+import { Table, Input, Row, Col, DatePicker, Typography, Select, Pagination, Button   } from "antd";
 import { useEffect, useState } from "react";
 import logApi from "../api/logApi";
 import ExportCSV from "./exportcsv";
 import BtnExportJson from "./btnExportJson";
-import { Button } from "antd/es/radio";
 import ModelInfo from "./Model";
 import moment from "moment";
 const { RangePicker } = DatePicker;
@@ -92,12 +91,6 @@ const LogForm = () => {
       title: 'STT',
       key: 'index',
       render: (text, record, index) => (currentPage - 1) * pageSize + index + 1,
-    },
-    {
-      title: "id",
-      id: "id",
-      dataIndex: "id",
-      key: "id",
     },
     {
       title: "User Name",
@@ -206,7 +199,7 @@ const LogForm = () => {
       key: "action",
       render: (text, record) => (
         <div style={{ display: "flex" }}>
-          <Button style={{ marginRight: 15, width: 110 }} type="primary" onClick={() => handleOpen(record)}>
+          <Button style={{ marginRight: 15, width: 100, fontSize:11, textAlign: "center" }} type="primary" onClick={() => handleOpen(record)}>
             Xem Chi Tiết
           </Button>
           <BtnExportJson data={record} />
@@ -254,12 +247,9 @@ const LogForm = () => {
                 style={{
                   width: 300,
                 }}
+                allowClear={true}
                 onChange={handleChange}
                 options={[
-                  {
-                    value: '',
-                    label: '',
-                  },
                   {
                     value: 'http://10.0.0.120:3001',
                     label: 'http://10.0.0.120:3001',
@@ -308,11 +298,8 @@ const LogForm = () => {
                   width: 300,
                 }}
                 onChange={handleChangeStatus}
+                allowClear={true}
                 options={[
-                  {
-                    value: '',
-                    label: '',
-                  },
                   {
                     value: '200',
                     label: 'Đã Hoàn Thành',
@@ -358,7 +345,7 @@ const LogForm = () => {
 
             </Col>
           </Row>
-          <Button style={{ margin: 20 }} type="primary" onClick={handleSelectInput}>Tìm Kiếm</Button>
+          <Button type='primary' style={{ margin: 20 }} onClick={handleSelectInput}>Tìm Kiếm</Button>
           <Table
             rowKey={(record, index) => index}
             dataSource={data}

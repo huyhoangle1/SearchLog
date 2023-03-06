@@ -18,7 +18,7 @@ function ModelInfo({openModel, setOpenModel, data}) {
           <div>
             <Button style={{margin: 5,display: "block"}} type="primary" onClick={() => handleCopyClick(data.body)}>Copy</Button>
             <hr />
-            {data.body}
+            <pre>{JSON.stringify(JSON.parse(data.body), null, 4)}</pre>
           </div>
         ),
       },
@@ -29,7 +29,7 @@ function ModelInfo({openModel, setOpenModel, data}) {
           <div>
             <Button style={{margin: 5, display: "block"}} type="primary" onClick={() => handleCopyClick(data.data)}>Copy</Button>
             <hr />
-            {data.data}
+            <pre>{JSON.stringify(JSON.parse(data.data), null, 4)}</pre>
           </div>
         ),
       },
@@ -45,7 +45,7 @@ function ModelInfo({openModel, setOpenModel, data}) {
 
   return (
     <Modal width={1500} title="Info Model" open={openModel} onOk={handleOk} onCancel={handleCancel}>
-    <Tabs defaultActiveKey="1" items={items} onChange={onChange} size="large" />
+    <Tabs defaultActiveKey="1" items={items} onChange={onChange} size="large" style={{ maxHeight: 500, overflowY: "auto" }}  />
   </Modal>
   );
 }

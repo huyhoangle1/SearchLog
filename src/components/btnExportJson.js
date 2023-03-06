@@ -29,8 +29,8 @@ function ExportJsonButton({data}) {
 
   return (
     <div style={{display: 'flex'}}>
-          <Button type="primary"  onClick={exportDataBody}>JSON Body</Button>
-          <Button type="primary" style={{marginLeft:10}} onClick={exportData}>JSON Data</Button>
+          <Button type="primary"  style={{fontSize:11, textAlign: "center"}} onClick={exportDataBody}>Export JSON Body</Button>
+          <Button type="primary" style={{marginLeft:10, fontSize:11, textAlign: "center"}} onClick={exportData}>Export JSON Data</Button>
     </div>
   )
 }

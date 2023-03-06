@@ -1,10 +1,12 @@
 import { customAxios } from "./customAxios";
 
+const LOG_API_URL = process.env.REACT_APP_LOG_API_URL;
+
 export default {
     getLog: async (courseId, courseCode, courseTitle, userName, path, domain, status, fromDate, toDate, pageNumber, pageSize) => {
       const res = await customAxios({
         method: "get",
-        url: `http://localhost:62325/api/Log`,
+        url: LOG_API_URL,
         params: {
           courseId: courseId,
           courseCode: courseCode,
