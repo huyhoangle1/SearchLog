@@ -1,4 +1,4 @@
-import { Table, Input, Row, Col, DatePicker, Typography, Select } from "antd";
+import { Table, Input, Row, Col, DatePicker, Typography, Select, Pagination } from "antd";
 import { useEffect, useState } from "react";
 import logApi from "../api/logApi";
 import ExportCSV from "./exportcsv";
@@ -12,29 +12,30 @@ const LogForm = () => {
   const [dataLog, setDataLog] = useState([]);
   const [loading, setLoading] = useState(false);
   const [exportData, setExportData] = useState([]);
-  const [idCourse, setIdCourse] = useState('');
-  const [courseCode, setCourseCode] = useState('');
-  const [nameCourse, setNameCourse] = useState('');
-  const [userName, setUserName] = useState('');
+  const [idCourse, setIdCourse] = useState(''); // id khóa học (body)
+  const [courseCode, setCourseCode] = useState(''); // mã khóa học
+  const [nameCourse, setNameCourse] = useState(''); // tên khóa học
+  const [userName, setUserName] = useState(''); // user name
   const [data, setData] = useState([]);
-  const [path, setPath] = useState('');
+  const [path, setPath] = useState(''); // path
   const [openModel, setOpenModel] = useState(false);
-  const [searchTime, setSearchTime] = useState(null);
-  const [domain, setDomain] = useState('');
-  const [status, setStatus] = useState('')
-  const pageSize = 10; // Số lượng dòng trên mỗi trang
+  const [domain, setDomain] = useState(''); // domain
+  const [status, setStatus] = useState(''); // trạng thái
+  const [pageSize, setPageSize] = useState(10); // Số lượng dòng trên mỗi trang
   const [currentPage, setCurrentPage] = useState(1); // Trang hiện tại
   const [fromDate, setFromDate] = useState('');
   const [toDate, setToDate] = useState('');
+  const [total, setTotal] = useState('');
 
 
   const getLog = async () => {
     const { RangePicker } = DatePicker;
     setLoading(true);
-    const dataLog = await logApi.getLog(idCourse, courseCode, nameCourse, userName, path, domain, status, fromDate, toDate);
-    setData(dataLog)
-    setDataLog(dataLog);
-    setExportData(dataLog);
+    const dataLog = await logApi.getLog(idCourse, courseCode, nameCourse, userName, path, domain, status, fromDate, toDate, currentPage, pageSize);
+    setTotal(dataLog.totalCount)
+    setData(dataLog.logs)
+    setDataLog(dataLog.logs);
+    setExportData(dataLog.logs);
     setLoading(false);
   };
 
@@ -60,6 +61,10 @@ const LogForm = () => {
     setToDate(value[1]);
   };
 
+  useEffect(() => {
+    getLog();
+  }, [currentPage])
+
   const handleChange = (value) => {
     setDomain(value);
   };
@@ -69,13 +74,11 @@ const LogForm = () => {
 
 
   const handleSelectInput = async () => {
-    const dataLog = await logApi.getLog(idCourse, courseCode, nameCourse, userName, path, domain, status, fromDate, toDate);
-    setData(dataLog)
+    const dataLog = await logApi.getLog(idCourse, courseCode, nameCourse, userName, path, domain, status, fromDate, toDate, currentPage, pageSize);
+    setData(dataLog.logs);
+    setTotal(dataLog.totalCount)
   }
 
-  useEffect(() => {
-    getLog();
-  }, [searchTime]);
   const columns = [
     {
       title: 'STT',
@@ -202,6 +205,7 @@ const LogForm = () => {
     },
   ];
 
+
   return (
     <>
       <Row>
@@ -212,110 +216,143 @@ const LogForm = () => {
           {
             openModel ? <ModelInfo openModel={openModel} data={exportData} setOpenModel={setOpenModel} /> : <div></div>
           }
-          <Row style={{ marginTop: 10 }}>
-            <Col span={8} offset={2}>
-              <Input onChange={selectIdCourse} placeholder="Tìm Kiếm Id Khóa Học" />
+          <Row>
+            <Col span={5} offset={2}>
+              <Col span={7}>
+                <h5>Id Khóa Học: </h5>
+              </Col>
+              <Col>
+                <Input onChange={selectIdCourse} placeholder="Tìm Kiếm Id Khóa Học" />
+              </Col>
             </Col>
-            <Col span={8} offset={2}>
-              <Input onChange={selectCourseCode} placeholder="Tìm Kiếm Theo Mã Khóa Học" />
-            </Col>
-          </Row>
-          <Row style={{ marginTop: 10 }}>
-            <Col span={8} offset={2}>
-              <Input onChange={selectNameCourse} placeholder="Tìm Kiếm Theo Tên Khóa Học" />
-            </Col>
-            <Col span={8} offset={2}>
-              <Input onChange={selectUserName} placeholder="Tìm Kiếm Theo UseName" />
-            </Col>
-          </Row>
-          <Row style={{marginTop:10}}>
-          <Col span={8} offset={2} >
-              <Input onChange={selectPath} placeholder="Tìm Kiếm Theo Path" />
-            </Col>
-            <Col span={8} offset={2}>
-              <Row>
-                <Col>
-                <h4>Tìm kiếm theo ngày</h4></Col>
-                <Col>
-                <RangePicker
-                  showTime
-                  format="YYYY-MM-DD HH:mm"
-                  onChange={onChange}
-                  defaultValue=''
-                />
+            <Col span={5} offset={2}>
+              <Col span={7}>
+                <h5>Mã Khóa Học: </h5>
+              </Col>
+              <Col>
+                <Input onChange={selectCourseCode} placeholder="Tìm Kiếm Theo Mã Khóa Học" />
+              </Col>
 
+            </Col>
+            <Col span={5} offset={2}>
+              <Col span={4}>
+                <h5>Domain: </h5>
+              </Col>
+              <Col>
+              <Select
+                defaultValue=""
+                style={{
+                  width: 300,
+                }}
+                onChange={handleChange}
+                options={[
+                  {
+                    value: 'http://10.0.0.120:3001',
+                    label: 'http://10.0.0.120:3001',
+                  },
+                  {
+                    value: 'http://10.0.0.120:7000',
+                    label: 'http://10.0.0.120:7000',
+                  },
+                  {
+                    value: 'http://10.0.0.121:3001',
+                    label: 'http://10.0.0.121:3001',
+                  }
+                ]}
+              />
+              </Col>
+
+            </Col>
+          </Row>
+          <Row>
+            <Col span={5} offset={2}>
+              <Col span={7}>
+                <h5>Tên Khóa Học: </h5>
+              </Col>
+              <Col>
+                <Input onChange={selectNameCourse} placeholder="Tìm Kiếm Theo Tên Khóa Học" />
+              </Col>
+
+            </Col>
+            <Col span={5} offset={2}>
+              <Col span={7}>
+                <h5>UseName: </h5>
+              </Col>
+              <Col>
+                <Input onChange={selectUserName} placeholder="Tìm Kiếm Theo UseName" />
+              </Col>
+
+            </Col>
+            <Col span={5} offset={2}>
+              <Col span={3}>
+                <h5>Loại: </h5>
+              </Col>
+              <Col>
+              <Select
+                defaultValue=""
+                style={{
+                  width: 300,
+                }}
+                onChange={handleChangeStatus}
+                options={[
+                  {
+                    value: '200',
+                    label: 'Đã Hoàn Thành',
+                  },
+                  {
+                    value: '500',
+                    label: 'Bị Lỗi',
+                  },
+                  {
+                    value: '0',
+                    label: 'Trước Khi Gửi Request',
+                  }
+                ]}
+              />
+              </Col>
+              
+ 
+            </Col>
+          </Row>
+          <Row>
+            <Col span={5} offset={2} >
+              <Col span={4}>
+                <h5>Path: </h5>
+              </Col>
+              <Col>
+                <Input onChange={selectPath} placeholder="Tìm Kiếm Theo Path" />
+              </Col>
+            </Col>
+            <Col span={5} offset={2}>
+              <Row>
+                <Col span={5}>
+                  <h5>Ngày tạo</h5></Col>
+                <Col>
+                  <RangePicker
+                    showTime
+                    format="YYYY-MM-DD HH:mm"
+                    onChange={onChange}
+                    defaultValue=''
+                  />
                 </Col>
               </Row>
-        
-            </Col>
-          </Row>
-          <Row>
-            <Col span={8} offset={2}>
-            <Select
-            defaultValue=""
-            style={{
-              width: 300,
-            }}
-            onChange={handleChange}
-            options={[
-              {
-                value: 'http://10.0.0.120:3001',
-                label: 'http://10.0.0.120:3001',
-              },
-              {
-                value: 'http://10.0.0.120:7000',
-                label: 'http://10.0.0.120:7000',
-              },
-              {
-                value: 'http://10.0.0.121:3001',
-                label: 'http://10.0.0.121:3001',
-              }
-            ]}
-          />
-            </Col>
-            <Col span={8} offset={2}>
-            <Select
-            defaultValue=""
-            style={{
-              width: 300,
-            }}
-            onChange={handleChangeStatus}
-            options={[
-              {
-                value: '200',
-                label: 'Đã Hoàn Thành',
-              },
-              {
-                value: '500',
-                label: 'Bị Lỗi',
-              },
-              {
-                value: '0',
-                label: 'Trước Khi Gửi Request',
-              }
-            ]}
-          />
-            </Col>
- 
-    
-          </Row>
-          <Button style={{ marginTop: 5 }} onClick={handleSelectInput}>Tìm Kiếm</Button>
-          <Row>
 
+            </Col>
           </Row>
-      
+          <Button style={{ margin: 20 }} type="primary" onClick={handleSelectInput}>Tìm Kiếm</Button>
           <Table
             rowKey={(record, index) => index}
             dataSource={data}
             columns={columns}
             loading={loading}
             pagination={{
-              ...data.pagination,
               current: currentPage,
               pageSize: pageSize,
+              total: total,
               onChange: (page) => setCurrentPage(page),
               showTotal: (total, range) =>
                 `${range[0]}-${range[1]} of ${total} items`,
+              showSizeChanger: false
             }}
           />
 
