@@ -26,6 +26,7 @@ const LogForm = () => {
   const [fromDate, setFromDate] = useState('');
   const [toDate, setToDate] = useState('');
   const [total, setTotal] = useState('');
+  const [value, setValue] = useState('');
 
 
   const getLog = async () => {
@@ -41,7 +42,6 @@ const LogForm = () => {
 
 
   const handleOpen = (item) => {
-    console.log(item);
     setOpenModel(true);
     setExportData(item)
   }
@@ -57,8 +57,16 @@ const LogForm = () => {
   const selectPath = (e) => setPath(e.target.value)
 
   const onChange = (value) => {
-    setFromDate(value[0])
-    setToDate(value[1]);
+    if(!value) {
+      setValue(value);
+      setFromDate(null);
+      setToDate(null)
+    }else{
+      setValue(value)
+      setFromDate(value[0]);
+      setToDate(value[1]);
+
+    }
   };
 
   useEffect(() => {
@@ -158,6 +166,8 @@ const LogForm = () => {
       title: "path",
       dataIndex: "path",
       key: "path",
+      render: (text) => <Typography.Paragraph ellipsis={{ rows: 3 }}>{text}</Typography.Paragraph>,
+      width: 300,
     },
     {
       title: "data",
@@ -196,8 +206,8 @@ const LogForm = () => {
       key: "action",
       render: (text, record) => (
         <div style={{ display: "flex" }}>
-          <Button style={{ marginRight: 15 }} type="primary" onClick={() => handleOpen(record)}>
-            Info
+          <Button style={{ marginRight: 15, width: 110 }} type="primary" onClick={() => handleOpen(record)}>
+            Xem Chi Tiết
           </Button>
           <BtnExportJson data={record} />
         </div>
@@ -211,7 +221,7 @@ const LogForm = () => {
       <Row>
         <Col span={24}>
           <div>
-            <h1>Table Log</h1>
+            <h1>EPS LMS LOG SYSTEM</h1>
           </div>
           {
             openModel ? <ModelInfo openModel={openModel} data={exportData} setOpenModel={setOpenModel} /> : <div></div>
@@ -246,6 +256,10 @@ const LogForm = () => {
                 }}
                 onChange={handleChange}
                 options={[
+                  {
+                    value: '',
+                    label: '',
+                  },
                   {
                     value: 'http://10.0.0.120:3001',
                     label: 'http://10.0.0.120:3001',
@@ -296,6 +310,10 @@ const LogForm = () => {
                 onChange={handleChangeStatus}
                 options={[
                   {
+                    value: '',
+                    label: '',
+                  },
+                  {
                     value: '200',
                     label: 'Đã Hoàn Thành',
                   },
@@ -332,7 +350,8 @@ const LogForm = () => {
                     showTime
                     format="YYYY-MM-DD HH:mm"
                     onChange={onChange}
-                    defaultValue=''
+                    value={value}
+                    allowClear={true}
                   />
                 </Col>
               </Row>

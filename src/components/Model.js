@@ -1,4 +1,4 @@
-import { Modal,Tabs } from "antd";
+import { Modal,Tabs, message, Button } from "antd";
 import React from "react";
 
 function ModelInfo({openModel, setOpenModel, data}) {
@@ -6,16 +6,32 @@ function ModelInfo({openModel, setOpenModel, data}) {
   const onChange = (key) => {
     console.log(key);
   };
+  const handleCopyClick= (copy)=>{
+    navigator.clipboard.writeText(copy);
+    message.success("Copy Thành công");
+  }
     const items = [
       {
         key: '1',
         label: `Tab 1`,
-        children: `${data.body}`,
+        children: (
+          <div>
+            <Button style={{margin: 5,display: "block"}} type="primary" onClick={() => handleCopyClick(data.body)}>Copy</Button>
+            <hr />
+            {data.body}
+          </div>
+        ),
       },
       {
         key: '2',
         label: `Tab 2`,
-        children: `${data.data}`,
+        children: (
+          <div>
+            <Button style={{margin: 5, display: "block"}} type="primary" onClick={() => handleCopyClick(data.data)}>Copy</Button>
+            <hr />
+            {data.data}
+          </div>
+        ),
       },
     ];
 
