@@ -1,4 +1,4 @@
-import { Table, Input, Row, Col, DatePicker, Typography, Select, Pagination, Button   } from "antd";
+import { Table, Input, Row, Col, DatePicker, Typography, Select, Button, AutoComplete    } from "antd";
 import { useEffect, useState } from "react";
 import logApi from "../api/logApi";
 import ExportCSV from "./exportcsv";
@@ -40,6 +40,30 @@ const LogForm = () => {
   };
 
 
+  const options = [
+    {
+      value: '/AppService/api/v2/assessment/submitd',
+    },
+    {
+      value: '/AppService/api/v2/assessment/submitf',
+    },
+    {
+      value: '/AppService/api/v2/assessment/submitmcq',
+    },
+    {
+      value: '/AppService/api/v2/assessment/submitos',
+    },
+    {
+      value: '/AppService/api/v2/assessment/submitmf',
+    },
+    {
+      value: '/AppService/api/v2/assessment/submittf',
+    },
+    {
+      value: '/AppService/api/v2/assessment/submitmrq',
+    },
+  ];
+
   const handleOpen = (item) => {
     setOpenModel(true);
     setExportData(item)
@@ -53,7 +77,7 @@ const LogForm = () => {
 
   const selectUserName = (e) => setUserName(e.target.value);
 
-  const selectPath = (e) => setPath(e.target.value)
+  const selectPath = (e) => setPath(e);
 
   const onChange = (value) => {
     if(!value) {
@@ -325,7 +349,19 @@ const LogForm = () => {
                 <h5>Path: </h5>
               </Col>
               <Col>
-                <Input onChange={selectPath} placeholder="Tìm Kiếm Theo Path" />
+                {/* <Input onChange={selectPath} placeholder="Tìm Kiếm Theo Path" /> */}
+                <AutoComplete
+                  options={options}
+                  style={{
+                    width: 320,
+                  }}
+                  onChange={selectPath}
+                  filterOption={(inputValue, option) =>
+                    option.value.toUpperCase().indexOf(inputValue.toUpperCase()) !== -1
+                  }
+                  allowClear={true}
+                  placeholder="Tìm Kiếm Theo Path"
+                />
               </Col>
             </Col>
             <Col span={5} offset={2}>
