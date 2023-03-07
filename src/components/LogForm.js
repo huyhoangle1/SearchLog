@@ -64,6 +64,16 @@ const LogForm = () => {
     },
   ];
 
+  const optionsDomain =[  {
+    value: 'http://10.0.0.120:3001',
+  },
+  {
+    value: 'http://10.0.0.120:7000',
+  },
+  {
+    value: 'http://10.0.0.121:3001',
+  }]
+
   const handleOpen = (item) => {
     setOpenModel(true);
     setExportData(item)
@@ -249,7 +259,7 @@ const LogForm = () => {
                 <h5>Id Khóa Học: </h5>
               </Col>
               <Col>
-                <Input onChange={selectIdCourse} placeholder="Tìm Kiếm Id Khóa Học" />
+                <Input style={{ width: 320 }} onChange={selectIdCourse} placeholder="Tìm Kiếm Id Khóa Học" />
               </Col>
             </Col>
             <Col span={5} offset={2}>
@@ -257,7 +267,7 @@ const LogForm = () => {
                 <h5>Mã Khóa Học: </h5>
               </Col>
               <Col>
-                <Input onChange={selectCourseCode} placeholder="Tìm Kiếm Theo Mã Khóa Học" />
+                <Input style={{ width: 320 }} onChange={selectCourseCode} placeholder="Tìm Kiếm Theo Mã Khóa Học" />
               </Col>
 
             </Col>
@@ -266,28 +276,18 @@ const LogForm = () => {
                 <h5>Domain: </h5>
               </Col>
               <Col>
-              <Select
-                defaultValue=""
-                style={{
-                  width: 300,
-                }}
-                allowClear={true}
-                onChange={handleChange}
-                options={[
-                  {
-                    value: 'http://10.0.0.120:3001',
-                    label: 'http://10.0.0.120:3001',
-                  },
-                  {
-                    value: 'http://10.0.0.120:7000',
-                    label: 'http://10.0.0.120:7000',
-                  },
-                  {
-                    value: 'http://10.0.0.121:3001',
-                    label: 'http://10.0.0.121:3001',
+               <AutoComplete
+                  options={optionsDomain}
+                  style={{
+                    width: 320,
+                  }}
+                  onChange={handleChange}
+                  filterOption={(inputValue, option) =>
+                    option.value.toUpperCase().indexOf(inputValue.toUpperCase()) !== -1
                   }
-                ]}
-              />
+                  allowClear={true}
+                  placeholder="Tìm Kiếm Theo Path"
+                />
               </Col>
 
             </Col>
@@ -298,7 +298,7 @@ const LogForm = () => {
                 <h5>Tên Khóa Học: </h5>
               </Col>
               <Col>
-                <Input onChange={selectNameCourse} placeholder="Tìm Kiếm Theo Tên Khóa Học" />
+                <Input style={{ width: 320 }} onChange={selectNameCourse} placeholder="Tìm Kiếm Theo Tên Khóa Học" />
               </Col>
 
             </Col>
@@ -307,7 +307,7 @@ const LogForm = () => {
                 <h5>UseName: </h5>
               </Col>
               <Col>
-                <Input onChange={selectUserName} placeholder="Tìm Kiếm Theo UseName" />
+                <Input style={{ width: 320 }} onChange={selectUserName} placeholder="Tìm Kiếm Theo UseName" />
               </Col>
 
             </Col>
@@ -319,7 +319,7 @@ const LogForm = () => {
               <Select
                 defaultValue=""
                 style={{
-                  width: 300,
+                  width: 320,
                 }}
                 onChange={handleChangeStatus}
                 allowClear={true}
@@ -339,8 +339,6 @@ const LogForm = () => {
                 ]}
               />
               </Col>
-              
- 
             </Col>
           </Row>
           <Row>

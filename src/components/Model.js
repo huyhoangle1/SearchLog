@@ -11,7 +11,6 @@ function ModelInfo({openModel, setOpenModel, data}) {
     textarea.value = copy;
     document.body.appendChild(textarea);
     textarea.select();
-    textarea.focus();
     document.execCommand('copy');
     document.body.removeChild(textarea);
     message.success('Copy Thành công');
