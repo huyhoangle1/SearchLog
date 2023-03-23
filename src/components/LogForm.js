@@ -1,4 +1,4 @@
-import { Table, Input, Row, Col, DatePicker, Typography, Select, Button, AutoComplete    } from "antd";
+import { Table, Input, Row, Col, DatePicker, Typography, Select, Button, AutoComplete, Popover } from "antd";
 import { useEffect, useState } from "react";
 import logApi from "../api/logApi";
 import ExportCSV from "./exportcsv";
@@ -64,7 +64,7 @@ const LogForm = () => {
     },
   ];
 
-  const optionsDomain =[  {
+  const optionsDomain = [{
     value: 'http://10.0.0.120:3001',
   },
   {
@@ -89,15 +89,15 @@ const LogForm = () => {
 
   const selectPath = (e) => setPath(e);
 
-  const onChange = (value) => {
-    if(!value) {
-      setValue(value);
+  const onChange = (dateString) => {
+    if (!dateString) {
+      setValue(dateString);
       setFromDate(null);
       setToDate(null)
-    }else{
-      setValue(value)
-      setFromDate(value[0]);
-      setToDate(value[1]);
+    } else {
+      setValue(dateString)
+      setFromDate(dateString[0]);
+      setToDate(dateString[1]);
 
     }
   };
@@ -219,6 +219,10 @@ const LogForm = () => {
           text: "Request Body",
           value: 0
         },
+        {
+          text: "Câu trả lời tự luận",
+          value: 1
+        },
       ],
       onFilter: (value, record) => record.status === value,
     },
@@ -226,6 +230,12 @@ const LogForm = () => {
       title: "note",
       dataIndex: "note",
       key: "note",
+      width: 120,
+      render: (text, record) => (
+        <Popover content={record.note}>
+          <Typography.Paragraph ellipsis={{ rows: 3 }}>{text}</Typography.Paragraph>
+        </Popover>
+      ),
     },
     {
       title: "action",
@@ -233,7 +243,7 @@ const LogForm = () => {
       key: "action",
       render: (text, record) => (
         <div style={{ display: "flex" }}>
-          <Button style={{ marginRight: 15, width: 100, fontSize:11, textAlign: "center" }} type="primary" onClick={() => handleOpen(record)}>
+          <Button style={{ marginRight: 15, width: 100, fontSize: 11, textAlign: "center" }} type="primary" onClick={() => handleOpen(record)}>
             Xem Chi Tiết
           </Button>
           <BtnExportJson data={record} />
@@ -276,7 +286,7 @@ const LogForm = () => {
                 <h5>Domain: </h5>
               </Col>
               <Col>
-               <AutoComplete
+                <AutoComplete
                   options={optionsDomain}
                   style={{
                     width: 320,
@@ -316,28 +326,32 @@ const LogForm = () => {
                 <h5>Loại: </h5>
               </Col>
               <Col>
-              <Select
-                defaultValue=""
-                style={{
-                  width: 320,
-                }}
-                onChange={handleChangeStatus}
-                allowClear={true}
-                options={[
-                  {
-                    value: '200',
-                    label: 'Đã Hoàn Thành',
-                  },
-                  {
-                    value: '500',
-                    label: 'Bị Lỗi',
-                  },
-                  {
-                    value: '0',
-                    label: 'Trước Khi Gửi Request',
-                  }
-                ]}
-              />
+                <Select
+                  defaultValue=""
+                  style={{
+                    width: 320,
+                  }}
+                  onChange={handleChangeStatus}
+                  allowClear={true}
+                  options={[
+                    {
+                      value: '200',
+                      label: 'Đã Hoàn Thành',
+                    },
+                    {
+                      value: '500',
+                      label: 'Bị Lỗi',
+                    },
+                    {
+                      value: '0',
+                      label: 'Trước Khi Gửi Request',
+                    },
+                    {
+                      value: '1',
+                      label: 'Câu trả lời tự luận',
+                    }
+                  ]}
+                />
               </Col>
             </Col>
           </Row>
@@ -368,6 +382,9 @@ const LogForm = () => {
                   <h5>Ngày tạo</h5></Col>
                 <Col>
                   <RangePicker
+                    style={{
+                      width: 320,
+                    }}
                     showTime
                     format="YYYY-MM-DD HH:mm"
                     onChange={onChange}
@@ -376,7 +393,6 @@ const LogForm = () => {
                   />
                 </Col>
               </Row>
-
             </Col>
           </Row>
           <Button type='primary' style={{ margin: 20 }} onClick={handleSelectInput}>Tìm Kiếm</Button>
